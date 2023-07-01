@@ -18,8 +18,8 @@ app.use(cors());
 app.use(express.json());
 
 // getByToken
-app.get("/get_user", authenticateToken, db.getCustomerByToken);
-app.get("/get_admin", authenticateToken, db.getAdminByToken);
+// app.get("/get_user", authenticateToken, db.getCustomerByToken);
+// app.get("/get_admin", authenticateToken, db.getAdminByToken);
 
 // Customer
 app.post("/users", db.createCustomer);
@@ -54,16 +54,18 @@ app.put("/update_admin/:id", db.updateAdmin);
 // app.get("/auction", db.getAuction);
 
 
-app.get("/auction",db.getAuction);
-
-
+app.get("/auction/:type",db.getAuction);
+app.get("/end_auction_with_user/:id",db.getEndAuction);
+app.get("/user_auction/:id",db.getUserAuction);
 app.get("/auction_count", db.getAuctioncount);
+app.get("/request_auction_count", db.getRequestAuctioncount);
 app.get("/bid_auctioncount", db.getBidAuctioncount);
 app.get("/not_active_auction", db.getNotActiveAuction);
 // app.get("/join_auction_provider", db.joinAuctionprovider);
 app.put("/accept_auction/:id", db.acceptAuction);
+app.put("/bid_on_auction", db.BidOnAuction);
 
-app.get("/auction/:id", db.getAuctionById);
+app.get("/auctionid/:id", db.getAuctionById);
 // app.post("/auction",upload.array("images", 9), db.createAuction);
 app.post("/auction", upload.array("images", 4), (req, res) => {
   const files = req.files;
@@ -113,9 +115,11 @@ app.post("/auction", upload.array("images", 4), (req, res) => {
   });
 });
 app.put("/delete_auction/:id", db.deleteAuction);
-app.put("/bookauction/:id", db.bookAuction);
+// app.put("/bookauction/:id", db.bookAuction);
 //app.get('/rented_auction_count', db.getRentedAuctioncount)
 app.get("/rentedauction", db.rentedAuction);
+
+
 
 // Sign
 app.get("/checkToken", authenticateToken, (req, res) => {

@@ -116,21 +116,21 @@ const deleteCustomer = (req, res) => {
   );
 };
 
-const getCustomerByToken = (req, res) => {
-  const { user_id } = req.user;
-  console.log(user_id);
+// const getCustomerByToken = (req, res) => {
+//   const { user_id } = req.user;
+//   console.log(user_id);
 
-  db.query(
-    "SELECT * FROM public.users WHERE user_id = $1",
-    [user_id],
-    (error, results) => {
-      if (error) {
-        return res.status(400).json(error);
-      }
-      res.status(200).json(results.rows);
-    }
-  );
-};
+//   db.query(
+//     "SELECT * FROM public.users WHERE user_id = $1",
+//     [user_id],
+//     (error, results) => {
+//       if (error) {
+//         return res.status(400).json(error);
+//       }
+//       res.status(200).json(results.rows);
+//     }
+//   );
+// };
 
 const updateUser = (req, res) => {
   const id = parseInt(req.params.id);
@@ -185,7 +185,7 @@ const updateUser = (req, res) => {
 // Admin
 const getAdmin = (req, res) => {
   db.query(
-    "SELECT * FROM public.admin ORDER BY admin_id ASC",
+    "SELECT * FROM public.admin WHERE is_delete = false ORDER BY admin_id ASC ",
     (error, results) => {
       if (error) {
         return res.status(400).json(error);
@@ -197,43 +197,43 @@ const getAdmin = (req, res) => {
 
 const createAdmin = async (req, res) => {
   const { name, email, password, phone, address } = req.body;
+  console.log(name, email, password, phone, address);
 
   let sql = "SELECT * FROM public.admin where email = $1";
   const oldAdmin = await db.query(sql, [email]);
+  console.log(oldAdmin.rows.length)
 
   if (oldAdmin.rows.length != 0) {
     res.status(409).send("Admin Email Already Exist.");
   } else {
     db.query(
-      "INSERT INTO public.admin (role,username, email,password,phone,address) VALUES ($1, $2,$3,$4,$5,$6) RETURNING *",
+      "INSERT INTO public.admin (role, username, email, password, phone) VALUES ($1,$2,$3,$4,$5,$6)",
       ["admin", name, email, password, phone, address],
       (error, results) => {
         if (error) {
           return res.status(400).json(error);
         }
-        res
-          .status(201)
-          .send(`Admin added with ID: ${results.rows[0].admin_id}`);
+        res.status(201).send(`Admin added with ID: ${results.rows[0].admin_id}`);
       }
     );
   }
 };
 
-const getAdminByToken = (req, res) => {
-  const { admin_id } = req.user;
+// const getAdminByToken = (req, res) => {
+//   const { admin_id } = req.user;
 
-  console.log(req.body);
-  db.query(
-    "SELECT * FROM public.admin WHERE admin_id = $1",
-    [admin_id],
-    (error, results) => {
-      if (error) {
-        return res.status(400).json(error);
-      }
-      res.status(200).json(results.rows);
-    }
-  );
-};
+//   console.log(req.body);
+//   db.query(
+//     "SELECT * FROM public.admin WHERE admin_id = $1",
+//     [admin_id],
+//     (error, results) => {
+//       if (error) {
+//         return res.status(400).json(error);
+//       }
+//       res.status(200).json(results.rows);
+//     }
+//   );
+// };
 
 const deleteAdmin = (req, res) => {
   const id = parseInt(req.params.id);
@@ -253,38 +253,120 @@ const deleteAdmin = (req, res) => {
 // Car
 
 const getNotActiveAuction = (req, res) => {
-  db.query(
-    "SELECT * FROM public.cars WHERE active = false AND is_delete = false  ORDER BY cars_id ASC",
-    (error, results) => {
-      if (error) {
-        return res.status(400).json(error);
-      }
-      res.status(200).json(results.rows);
-    }
-  );
-};
-const getAuction = (req, res) => {
-  const query = "SELECT * FROM auctions;";
-
+ const  query = "SELECT * FROM auctions WHERE active = false AND is_delete = false ORDER BY auction_id DESC;";
   db
-    .query(query)
-    .then((result) => {
-      const auctions = result.rows.map((auction) => {
-        const images = auction?.productimage.map((imageData, index) => {
-          const base64Image = Buffer.from(imageData, 'base64').toString('base64');
-          return `data:image/png;base64,${base64Image}`;
-        });
-        return { ...auction, productimage: images };
+  .query(query)
+  .then((result) => {
+    const auctions = result.rows.map((auction) => {
+      const images = auction?.productimage.map((imageData, index) => {
+        const base64Image = Buffer.from(imageData, 'base64').toString('base64');
+        return `data:image/png;base64,${base64Image}`;
       });
-      res.json(auctions);
-    })
-    .catch((error) => {
-      console.error("Error retrieving data:", error);
-      const errorMessage = "Error retrieving data";
-      res.status(500).json({ error: errorMessage });
+      return { ...auction, productimage: images };
     });
+    res.json(auctions);
+  })
+  .catch((error) => {
+    console.error("Error retrieving data:", error);
+    const errorMessage = "Error retrieving data";
+    res.status(500).json({ error: errorMessage });
+  })
+};
+
+const getAuction = (req, res) => {
+  const type = req.params.type
+  console.log(req.params.type)
+  let query;
+  //console.log("type"+type)
+  if (type =='null'){
+    //  query = "SELECT * FROM auctions WHERE active = true AND is_delete = false ORDER BY auction_id DESC;";
+     query =  "SELECT discrabtion, auction_id,auction_date, username,phone,email,title,current_bid,productimage FROM public.auctions INNER JOIN public.users ON public.auctions.current_user_id =public.users.user_id WHERE active=true  ORDER BY auction_id DESC;";
+     db
+     .query(query)
+     .then((result) => {
+       const auctions = result.rows.map((auction) => {
+         const images = auction?.productimage.map((imageData, index) => {
+           const base64Image = Buffer.from(imageData, 'base64').toString('base64');
+           return `data:image/png;base64,${base64Image}`;
+         });
+         return { ...auction, productimage: images };
+       });
+       res.json(auctions);
+     })
+     .catch((error) => {
+       console.error("Error retrieving data:", error);
+       const errorMessage = "Error retrieving data";
+       res.status(500).json({ error: errorMessage });
+     });
+  }else{
+    console.log("amro2")
+     query = "SELECT auction_id,auction_date, username,phone,email,title,current_bid,productimage FROM public.auctions INNER JOIN public.users ON public.auctions.current_user_id =public.users.user_id  ORDER BY auction_id DESC";
+     //query = 'SELECT * FROM auctions WHERE active = true AND is_delete = false AND type=$1 ORDER BY auction_id DESC';
+     db
+     .query(query,[type])
+     .then((result) => {
+       const auctions = result.rows.map((auction) => {
+         const images = auction?.productimage.map((imageData, index) => {
+           const base64Image = Buffer.from(imageData, 'base64').toString('base64');
+           return `data:image/png;base64,${base64Image}`;
+         });
+         return { ...auction, productimage: images };
+       });
+       res.json(auctions);
+     })
+     .catch((error) => {
+       console.error("Error retrieving data:", error);
+       const errorMessage = "Error retrieving data";
+       res.status(500).json({ error: errorMessage });
+     });
+  }
 }
 
+const getEndAuction = (req, res) => {
+  const id = req.params.id
+  console.log(req.params.type)
+  let query = "SELECT auction_id,auction_date, username,phone,email,title,current_bid,productimage FROM public.auctions INNER JOIN public.users ON public.auctions.current_user_id =public.users.user_id WHERE public.auctions.user_id = $1"
+     db
+     .query(query,[id])
+     .then((result) => {
+       const auctions = result.rows.map((auction) => {
+         const images = auction?.productimage.map((imageData, index) => {
+           const base64Image = Buffer.from(imageData, 'base64').toString('base64');
+           return `data:image/png;base64,${base64Image}`;
+         });
+         return { ...auction, productimage: images };
+       });
+       res.json(auctions);
+     })
+     .catch((error) => {
+       console.error("Error retrieving data:", error);
+       const errorMessage = "Error retrieving data";
+       res.status(500).json({ error: errorMessage });
+     });
+}
+
+const getUserAuction = (req, res) => {
+  const id = req.params.id
+  let query = "SELECT * FROM auctions WHERE current_user_id =$1";
+     db
+     .query(query,[id])
+     .then((result) => {
+       const auctions = result.rows.map((auction) => {
+         const images = auction?.productimage.map((imageData, index) => {
+           const base64Image = Buffer.from(imageData, 'base64').toString('base64');
+           return `data:image/png;base64,${base64Image}`;
+         });
+         return { ...auction, productimage: images };
+       });
+       res.json(auctions);
+     })
+     .catch((error) => {
+       console.error("Error retrieving data:", error);
+       const errorMessage = "Error retrieving data";
+       res.status(500).json({ error: errorMessage });
+     });
+  
+}
 // const joincarprovider = (req, res) => {
 //   db.query(
 //     "SELECT * FROM public.cars RIGHT OUTER JOIN public.provider ON public.cars.provider_id = public.provider.provider_id WHERE public.cars.is_delete = false AND public.cars.active = true ORDER BY public.cars.cars_id DESC",
@@ -299,7 +381,19 @@ const getAuction = (req, res) => {
 
 const getAuctioncount = (req, res) => {
   db.query(
-    "SELECT * FROM public.cars WHERE is_delete = false AND active = true",
+    "SELECT * FROM public.auctions WHERE is_delete = false AND active = true",
+    (error, results) => {
+      if (error) {
+        return res.status(400).json(error);
+      }
+      res.status(200).json(results.rows.length);
+    }
+  );
+};
+
+const getRequestAuctioncount = (req, res) => {
+  db.query(
+    "SELECT * FROM public.auctions WHERE is_delete = false AND active = false",
     (error, results) => {
       if (error) {
         return res.status(400).json(error);
@@ -310,8 +404,9 @@ const getAuctioncount = (req, res) => {
 };
 
 const getBidAuctioncount = (req, res) => {
+  
   db.query(
-    "SELECT * FROM public.cars WHERE available = false AND active = true ",
+    "SELECT * FROM public.auctions WHERE available = false AND active = true ",
     (error, results) => {
       if (error) {
         return res.status(400).json(error);
@@ -325,13 +420,13 @@ const acceptAuction = (req, res) => {
   const id = parseInt(req.params.id);
 
   db.query(
-    "UPDATE public.cars SET active = $1 WHERE cars_id = $2",
+    "UPDATE public.auctions SET active = $1 WHERE auction_id = $2",
     [true, id],
     (error, results) => {
       if (error) {
         return res.status(400).json(error);
       }
-      res.status(200).send(`car with ID: ${id} Accepted`);
+      res.status(200).send(`Auction with ID: ${id} Accepted`);
     }
   );
 };
@@ -544,19 +639,18 @@ const rentedAuction = (req, res) => {
 //   );
 // };
 
-const bookAuction = (req, res) => {
-  const id = parseInt(req.params.id);
-  const { start_date, end_date, start_location, end_location, user_id } =
+const BidOnAuction = (req, res) => {
+  const { auction_id, user_id, current_bid ,user_name} =
     req.body;
 
   db.query(
-    "UPDATE public.cars SET user_id = $1, start_date = $2,end_date=$3,start_location=$4,end_location=$5,available=$6 WHERE cars_id = $7",
-    [user_id, start_date, end_date, start_location, end_location, false, id],
+    "UPDATE public.auctions SET current_user_id = $1, current_bid = $2,user_name=$3 WHERE auction_id = $4",
+    [user_id, current_bid,user_name, auction_id],
     (error, results) => {
       if (error) {
         return res.status(400).json(error);
       }
-      res.status(200).send(`Car with ID: ${id} Booked`);
+      res.status(200).send(`Bid on Auction with ID: ${auction_id} `);
     }
   );
 };
@@ -565,13 +659,13 @@ const deleteAuction = (req, res) => {
   const id = parseInt(req.params.id);
 
   db.query(
-    "UPDATE public.cars SET is_delete = $1 WHERE cars_id = $2",
+    "UPDATE public.auctions SET is_delete = $1 WHERE auction_id = $2",
     [true, id],
     (error, results) => {
       if (error) {
         return res.status(400).json(error);
       }
-      res.status(200).send(`Car  with ID: ${id} deleted`);
+      res.status(200).send(`Auction  with ID: ${id} deleted`);
     }
   );
 };
@@ -686,13 +780,13 @@ module.exports = {
   updateCustomerCreaditCard,
   deleteCustomer,
   getCustomercount,
-  getCustomerByToken,
+  // getCustomerByToken,
   updateUser,
 
   getAdmin,
   createAdmin,
   deleteAdmin,
-  getAdminByToken,
+  // getAdminByToken,
   updateAdmin,
 
   // getProvider,
@@ -705,10 +799,12 @@ module.exports = {
   // getProviderByToken,
 
   getAuction,
+  getEndAuction,
+  getUserAuction,
   getAuctioncount,
+  getRequestAuctioncount,
   getAuctionById,
   createAuction,
-  bookAuction,
   deleteAuction,
   getBidAuctioncount,
   // getAuctionByIdProvider,
@@ -717,6 +813,7 @@ module.exports = {
   getNotActiveAuction,
   acceptAuction,
   // joincarprovider,
+  BidOnAuction,
 
 
   checkCustomer,
