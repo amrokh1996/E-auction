@@ -278,9 +278,9 @@ const getAuction = (req, res) => {
   console.log(req.params.type)
   let query;
   //console.log("type"+type)
-  if (type =='null'){
-    //  query = "SELECT * FROM auctions WHERE active = true AND is_delete = false ORDER BY auction_id DESC;";
-     query =  "SELECT discrabtion, auction_id,auction_date, username,phone,email,title,current_bid,productimage FROM public.auctions INNER JOIN public.users ON public.auctions.current_user_id =public.users.user_id WHERE active=true  ORDER BY auction_id DESC;";
+  if (type ==='null'){
+      query = "SELECT * FROM auctions WHERE active = true AND is_delete = false ORDER BY auction_id DESC;";
+     //query =  "SELECT discrabtion, auction_id,auction_date, username,phone,email,title,current_bid,productimage FROM public.auctions INNER JOIN public.users ON public.auctions.current_user_id =public.users.user_id WHERE active=true  ORDER BY auction_id DESC;";
      db
      .query(query)
      .then((result) => {
@@ -300,8 +300,8 @@ const getAuction = (req, res) => {
      });
   }else{
     console.log("amro2")
-     query = "SELECT auction_id,auction_date, username,phone,email,title,current_bid,productimage FROM public.auctions INNER JOIN public.users ON public.auctions.current_user_id =public.users.user_id  ORDER BY auction_id DESC";
-     //query = 'SELECT * FROM auctions WHERE active = true AND is_delete = false AND type=$1 ORDER BY auction_id DESC';
+     //query = "SELECT auction_id,auction_date, username,phone,email,title,current_bid,productimage FROM public.auctions INNER JOIN public.users ON public.auctions.current_user_id =public.users.user_id  ORDER BY auction_id DESC";
+     query = 'SELECT * FROM auctions WHERE active = true AND is_delete = false AND type=$1 ORDER BY auction_id DESC';
      db
      .query(query,[type])
      .then((result) => {
@@ -325,7 +325,7 @@ const getAuction = (req, res) => {
 const getEndAuction = (req, res) => {
   const id = req.params.id
   console.log(req.params.type)
-  let query = "SELECT auction_id,auction_date, username,phone,email,title,current_bid,productimage FROM public.auctions INNER JOIN public.users ON public.auctions.current_user_id =public.users.user_id WHERE public.auctions.user_id = $1"
+  let query = "SELECT auction_id,auction_date, username,phone,email,title,current_bid,productimage FROM public.auctions INNER JOIN public.users ON public.auctions.user_id =public.users.user_id WHERE public.auctions.user_id = $1"
      db
      .query(query,[id])
      .then((result) => {
