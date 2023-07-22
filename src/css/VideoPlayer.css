@@ -1,0 +1,54 @@
+.modal-dialog {
+    max-width: 560px;
+    margin: 30px auto;
+}
+
+.modal-body {
+position:relative;
+padding:0px;
+}
+.close {
+position:absolute;
+right:-30px;
+top:0;
+z-index:999;
+font-size:2rem;
+font-weight: normal;
+color:#fff;
+opacity:1;
+}
+
+.video-button{
+    position: absolute;
+    top:28%;
+    left:42%;
+    background-color: red;
+    width: 80px;
+    height: 80px;
+    border-radius: 40px;
+    z-index: 10;
+    
+    
+}
+
+.video-img:hover  {
+    .video-button{display: block;}
+  }
+
+@media (max-width:500px) {
+    .video-button{
+        position: absolute;
+        top:15%;
+        left:38%;
+    } 
+
+    .modal-dialog {
+        max-width: 350px;
+        margin: 30px auto;
+    }
+    iFrame{
+        width:350px;
+    }
+
+    
+}

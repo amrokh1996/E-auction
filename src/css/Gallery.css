@@ -1,0 +1,23 @@
+.video-button{
+    display: none;
+}
+
+.video-img:hover>.video-button{
+        display: block;
+        transition: 2s;
+}
+.video-img:hover>img{
+    opacity: 0.5;
+    transition: 1s;
+}
+
+.Show-image{
+    height: 25rem;
+    width: 100%;
+}
+
+@media (max-width:500px){
+    .Show-image{
+        height: 15rem;
+    }
+}
